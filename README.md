@@ -29,15 +29,21 @@ This project connects with my interest in hands-on IT, infrastructure, data cent
 
 ## Current Status
 
-This is an early version of the project. The dashboard is working, but I plan to improve the API, database setup, documentation, and error handling over time.
+## Current Status
+
+NetWatch currently has a working FastAPI backend, SQLite database, and Streamlit dashboard. Users can add devices through the dashboard, run ping checks, view online/offline status, monitor latency, and track uptime.
+
+## Future Improvements
 
 ## Future Improvements
 
 - Add setup instructions
 - Add screenshots
-- Add a device management page
+- Add a device table with edit/delete actions
+- Replace raw JSON stats with polished dashboard metrics
 - Improve error handling if the API is offline
+- Add an event log for ping history
 - Add email or dashboard alerts when a device goes offline
 - Add tests for API routes
 - Add Docker support
-- Deploy demo version
+- Deploy demo versionget a
