@@ -7,88 +7,153 @@ API_URL = "http://127.0.0.1:8000"
 
 st.title("📡 NetWatch Dashboard")
 
-# Auto-refresh controls
-st.sidebar.header("Refresh Settings")
-refresh_rate = st.sidebar.slider("Auto-refresh every (seconds)", 5, 60, 10)
-st_autorefresh(interval=refresh_rate * 1000, key="data_refresh")
-
-# Fetch devices
-devices = requests.get(f"{API_URL}/devices").json()
-
-if not devices:
-    st.warning("No devices found. Add a device in the API first.")
-    st.stop()
-
-device_names = {d["id"]: d["name"] for d in devices}
-
-selected_id = st.selectbox(
-    "Select a device",
-    options=list(device_names.keys()),
-    format_func=lambda x: device_names[x]
+page = st.sidebar.radio(
+    "Navigation",
+    ["Dashboard", "Devices", "Event Log", "Settings"]
 )
 
-if st.button("Run Ping Now"):
-    requests.post(f"{API_URL}/status/run")
-    st.success("Ping executed!")
+if page == "Dashboard":
+    st.sidebar.header("Refresh Settings")
+    refresh_rate = st.sidebar.slider("Auto-refresh every (seconds)", 5, 60, 10)
+    st_autorefresh(interval=refresh_rate * 1000, key="data_refresh")
+
+    devices = requests.get(f"{API_URL}/devices").json()
+
+    if not devices:
+        st.warning("No devices found. Add a device first.")
+        st.stop()
+
+    device_names = {d["id"]: d["name"] for d in devices}
+
+    selected_id = st.selectbox(
+        "Select a device",
+        options=list(device_names.keys()),
+        format_func=lambda x: device_names[x]
+    )
+
+    if st.button("Run Ping Now"):
+        requests.post(f"{API_URL}/status/run")
+        st.success("Ping executed!")
+
+    total_devices = len(devices)
+    online_devices = 0
+    offline_devices = 0
+
+    for device_id in device_names.keys():
+        device_stats = requests.get(f"{API_URL}/stats?device_id={device_id}").json()
+
+        if device_stats.get("last_status") == "Online":
+            online_devices += 1
+        else:
+            offline_devices += 1
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Devices", total_devices)
+    col2.metric("Online", online_devices)
+    col3.metric("Offline", offline_devices)
+
+    stats = requests.get(f"{API_URL}/stats?device_id={selected_id}").json()
+
+    status = stats.get("last_status")
+
+    if status == "Online":
+        st.success("🟢 Device is Online")
+    
+    elif status == "Offline":
+        st.error("🔴 Device is Offline")
+    else:
+        st.warning("⚪ Device has not been checked yet. Click Run Ping Now.")
+
+    st.subheader("📊 Device Stats")
+    st.json(stats)
+
+    history = requests.get(f"{API_URL}/history?device_id={selected_id}").json()
+
+    timestamps = [h["timestamp"] for h in history]
+    latencies = [h["latency_ms"] for h in history]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=timestamps, y=latencies, mode="lines+markers"))
+    fig.update_layout(
+        title="Latency Over Time (ms)",
+        xaxis_title="Time",
+        yaxis_title="Latency (ms)"
+    )
+    st.plotly_chart(fig)
+
+    status_values = [1 if h["status"] == "Online" else 0 for h in history]
+
+    status_fig = go.Figure()
+    status_fig.add_trace(go.Bar(
+        x=timestamps,
+        y=status_values,
+        marker_color=["green" if v == 1 else "red" for v in status_values]
+    ))
+
+    status_fig.update_layout(
+        title="Status Timeline (Online = Green, Offline = Red)",
+        xaxis_title="Time",
+        yaxis=dict(
+            tickmode="array",
+            tickvals=[0, 1],
+            ticktext=["Offline", "Online"]
+        ),
+        showlegend=False
+    )
+
+    st.plotly_chart(status_fig)
+
+    uptime = stats["uptime_percent"]
+
+    gauge = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=uptime,
+        title={"text": "Uptime %"},
+        gauge={"axis": {"range": [0, 100]}}
+    ))
+
+    st.plotly_chart(gauge)
 
 
-# Fetch stats
-stats = requests.get(f"{API_URL}/stats?device_id={selected_id}").json()
+if page == "Devices":
+    st.header("🖥️ Device Management")
 
-status = stats["last_status"]
+    st.write("Add a new device to monitor.")
 
-if status == "Online":
-    st.success("🟢 Device is Online")
-else:
-    st.error("🔴 Device is Offline")
+    with st.form("add_device_form"):
+        name = st.text_input("Device Name")
+        ip = st.text_input("IP Address")
+        device_type = st.selectbox(
+            "Device Type",
+            ["Router", "Server", "Printer", "Switch", "PC", "Other"]
+    )
 
-st.subheader("📊 Device Stats")
-st.json(stats)
+        submitted = st.form_submit_button("Add Device")
 
-# Fetch history
-history = requests.get(f"{API_URL}/history?device_id={selected_id}").json()
+        if submitted:
+            if not name or not ip:
+                st.error("Please enter both a device name and IP address.")
+            else:
+                new_device = {
+                    "name": name,
+                    "ip_address": ip,
+                    "device_type": device_type
+                }
 
-timestamps = [h["timestamp"] for h in history]
-latencies = [h["latency_ms"] for h in history]
+                response = requests.post(f"{API_URL}/devices", json=new_device)
 
-# Latency chart
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=timestamps, y=latencies, mode="lines+markers"))
-fig.update_layout(title="Latency Over Time (ms)", xaxis_title="Time", yaxis_title="Latency (ms)")
-st.plotly_chart(fig)
-
-# Status timeline chart
-status_values = [1 if h["status"] == "Online" else 0 for h in history]
-
-status_fig = go.Figure()
-status_fig.add_trace(go.Bar(
-    x=timestamps,
-    y=status_values,
-    marker_color=["green" if v == 1 else "red" for v in status_values]
-))
-
-status_fig.update_layout(
-    title="Status Timeline (Online = Green, Offline = Red)",
-    xaxis_title="Time",
-    yaxis=dict(
-        tickmode="array",
-        tickvals=[0, 1],
-        ticktext=["Offline", "Online"]
-    ),
-    showlegend=False
-)
-
-st.plotly_chart(status_fig)
+                if response.status_code == 200:
+                    st.success(f"Device '{name}' added successfully!")
+                else:
+                    st.error("Could not add device.")
+                    st.write(response.text)
 
 
-# Uptime gauge
-uptime = stats["uptime_percent"]
+if page == "Event Log":
+    st.header("📜 Event Log")
+    st.info("Coming soon.")
 
-gauge = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=uptime,
-    title={"text": "Uptime %"},
-    gauge={"axis": {"range": [0, 100]}}
-))
 
-st.plotly_chart(gauge)
+if page == "Settings":
+    st.header("⚙️ Settings")
+    st.info("Coming soon.")
