@@ -64,8 +64,35 @@ if page == "Dashboard":
     else:
         st.warning("⚪ Device has not been checked yet. Click Run Ping Now.")
 
-    st.subheader("📊 Device Stats")
-    st.json(stats)
+    st.subheader("📊 Device Details")
+
+    avg_latency = stats.get("average_latency_ms")
+    last_latency = stats.get("last_latency_ms")
+    last_checked = stats.get("last_timestamp")
+    uptime = stats.get("uptime_percent", 0)
+    total_checks = stats.get("total_checks", 0)
+
+    col1, col2 = st.columns(2)
+
+    col1.metric("📡 Status", status)
+    col2.metric("📈 Uptime", f"{uptime}%")
+
+    col1.metric(
+        "⚡ Avg Latency",
+        "N/A" if avg_latency is None else f"{avg_latency:.2f} ms"
+    )
+
+    col2.metric(
+        "📶 Last Latency",
+        "N/A" if last_latency is None else f"{last_latency:.2f} ms"
+    )
+
+    col1.metric("🔄 Total Checks", total_checks)
+
+    if last_checked:
+        col2.metric("🕒 Last Checked", last_checked)
+    else:
+        col2.metric("🕒 Last Checked", "Never")
 
     history = requests.get(f"{API_URL}/history?device_id={selected_id}").json()
 
@@ -102,17 +129,7 @@ if page == "Dashboard":
     )
 
     st.plotly_chart(status_fig)
-
-    uptime = stats["uptime_percent"]
-
-    gauge = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=uptime,
-        title={"text": "Uptime %"},
-        gauge={"axis": {"range": [0, 100]}}
-    ))
-
-    st.plotly_chart(gauge)
+    
 
 
 if page == "Devices":
@@ -126,7 +143,7 @@ if page == "Devices":
         device_type = st.selectbox(
             "Device Type",
             ["Router", "Server", "Printer", "Switch", "PC", "Other"]
-    )
+        )
 
         submitted = st.form_submit_button("Add Device")
 
@@ -148,6 +165,16 @@ if page == "Devices":
                     st.error("Could not add device.")
                     st.write(response.text)
 
+    st.divider()
+
+    st.subheader("📋 Monitored Devices")
+
+    devices = requests.get(f"{API_URL}/devices").json()
+
+    if devices:
+        st.table(devices)
+    else:
+        st.info("No devices have been added yet.")
 
 if page == "Event Log":
     st.header("📜 Event Log")
