@@ -1,49 +1,155 @@
 # NetWatch
 
-NetWatch is a simple network monitoring dashboard built with Python and Streamlit.  
-It tracks devices, checks whether they are online or offline, measures latency, and displays uptime statistics.
+NetWatch is a network monitoring application built with **Python, FastAPI, Streamlit, and SQLite**. It allows users to monitor network devices, track connectivity, measure latency, and visualize network health through an interactive dashboard.
+
+This project was created to strengthen my skills in Python development, REST APIs, networking concepts, databases, and dashboard design while building a practical tool relevant to IT infrastructure and support roles.
+
+---
+
+## Screenshots
+
+### Dashboard
+
+![Dashboard](screenshots/dashboard.png)
+
+### Device Management
+
+![Device Management](screenshots/device-management.png)
 
 ## Features
 
-- Add and monitor network devices through an API
-- Run a manual ping check
-- View current device status
-- Track latency over time
-- View online/offline history
-- Display uptime percentage with a gauge
-- Auto-refresh dashboard data
+* 📊 Interactive monitoring dashboard
+* 🖥️ Add and manage monitored devices
+* 🌐 FastAPI REST API backend
+* 🗄️ SQLite database for device and monitoring history
+* 📡 Manual ping checks
+* 🟢 Online/Offline device monitoring
+* ⚡ Latency tracking over time
+* 📈 Uptime monitoring
+* 🔄 Auto-refresh dashboard
+* 📋 Dashboard summary metrics
+
+  * Total Devices
+  * Online Devices
+  * Offline Devices
+* 📉 Interactive latency charts
+* 📊 Status timeline visualization
+
+---
 
 ## Tech Stack
 
-- Python
-- Streamlit
-- FastAPI
-- SQLite
-- Plotly
-- Requests
+* Python
+* FastAPI
+* Streamlit
+* SQLite
+* SQLAlchemy
+* Plotly
+* Requests
+
+---
+
+## Project Architecture
+
+```text
+Streamlit Dashboard
+        │
+        ▼
+FastAPI REST API
+        │
+        ▼
+SQLite Database
+        │
+        ▼
+Network Ping Engine
+```
+
+---
 
 ## Why I Built This
 
-I built NetWatch to practice networking, APIs, dashboards, and troubleshooting tools.  
-This project connects with my interest in hands-on IT, infrastructure, data centers, and support roles.
+As I transition into a career in IT and software development, I wanted to build a project that demonstrates both programming ability and practical networking knowledge.
+
+NetWatch combines frontend development, backend APIs, databases, and networking into a single application that simulates the type of monitoring tools used by IT departments, help desks, and data center operations teams.
+
+---
 
 ## Current Status
 
-## Current Status
+Current functionality includes:
 
-NetWatch currently has a working FastAPI backend, SQLite database, and Streamlit dashboard. Users can add devices through the dashboard, run ping checks, view online/offline status, monitor latency, and track uptime.
+* ✅ Multi-page dashboard
+* ✅ Device Management page
+* ✅ Add new devices
+* ✅ View monitored devices
+* ✅ Run manual network checks
+* ✅ Live device status monitoring
+* ✅ Latency tracking
+* ✅ Uptime statistics
+* ✅ Interactive data visualizations
+* ✅ REST API backend
+* ✅ SQLite persistence
 
-## Future Improvements
+---
 
-## Future Improvements
+## Planned Improvements
 
-- Add setup instructions
-- Add screenshots
-- Add a device table with edit/delete actions
-- Replace raw JSON stats with polished dashboard metrics
-- Improve error handling if the API is offline
-- Add an event log for ping history
-- Add email or dashboard alerts when a device goes offline
-- Add tests for API routes
-- Add Docker support
-- Deploy demo versionget a
+* ✏️ Edit existing devices
+* 🗑️ Delete devices
+* 📜 Event log with searchable history
+* 📧 Email alerts for offline devices
+* ⚠️ Improved API error handling
+* 🧪 Automated API tests
+* 🐳 Docker support
+* ☁️ Cloud deployment
+* 📷 Dashboard screenshots
+* 📖 Complete installation guide
+
+---
+
+## Running the Project
+
+Clone the repository:
+
+```bash
+git clone https://github.com/ajh767676/netwatch.git
+cd netwatch
+```
+
+Create and activate a virtual environment:
+
+```bash
+python -m venv venv
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Start the FastAPI backend:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+In a second terminal, start the Streamlit dashboard:
+
+```bash
+streamlit run dashboard.py
+```
+
+---
+
+## Career Focus
+
+This project is part of my software engineering portfolio as I prepare for roles such as:
+
+* IT Support Technician
+* Infrastructure Technician
+* Data Center Operations
+* Network Support Technician
+* Systems Administrator
+* Entry-Level Python Developer
+* Junior Software Developer
